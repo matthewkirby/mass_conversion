@@ -1,0 +1,7 @@
+In the setup() section, 
+ - Read ini file to select cM relation.
+ - Do any init for that relation
+
+In execute() section
+ - Compute M500c for a list of M200m
+   - Read in from Mass function file???

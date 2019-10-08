@@ -1,0 +1,54 @@
+"""Classes to define different concentration-mass relations"""
+import utils
+
+
+class ConcentrationModel(object):
+    """This is the base class for each cM model"""
+    def __init__(self, name, model_mdef, mask, cosmology, note):
+        self.name = name
+        self.model_mdef = model_mdef # Mass definition that the model is defined in
+        self.mask = mask # Dict mmin/mmax zmin/zmax can be None
+        self.cosmology = cosmology # Defined in a specific cosmology
+        self.note = note
+
+    def __call__(self, m1list, m1def):
+        """Given m1 in m1def, compute concentration in m1def"""
+        raise NotImplementedError("c-M relation for {} is not yet implemented".format(self.name))
+
+    def __repr__(self):
+        line1 = 'Concentration-Mass relation from {}\n'.format(self.name)
+        line2 = 'Defined for mass definition(s): {}\n'.format(self.model_mdef)
+        line3 = 'With masses and redshifts in {}\n'.format(str(self.mask))
+        line4 = self.note
+        return line1+line2+line3+line4
+
+
+class FixedC200c(ConcentrationModel):
+    """For high mass clusters, concentration plateaus at c200c ~ 4.0"""
+    def __init__(self, c200c):
+        self.c200c = float(c200c)
+        note = "Approximation for high mass clusters"
+        super().__init__(name='fixedc', model_mdef='200c', mask=None,
+                         cosmology=None, note=note)
+
+    def __repr__(self):
+        parent = super().__repr__()
+        line1 = '\nc200c = {}\n'.format(self.c200c)
+        return parent+line1
+
+    def __call__(self, m1list, m1def):
+        """Given m1 in m1def, compute concentration in m1def"""
+        delta1, density1, c1 = 200., 'crit', self.c200c
+        delta2, density2 = utils.parse_mdef_string(m1def)
+
+        
+
+
+
+def main():
+    cmrel = FixedC200c(4.0)
+    cmrel([1e14], '200m')
+
+
+if __name__ == "__main__":
+    main()
