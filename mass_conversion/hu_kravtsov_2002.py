@@ -1,4 +1,5 @@
 """The various fitting functions and formulae from Hu and Kravtsov 2002"""
+import numpy as np
 
 
 def fhalo_ffunc(x):
@@ -41,14 +42,6 @@ def inv_fhalo_ffunc(f):
     lnf = np.log(f)
     p = a2 + a3*lnf + a4*lnf*lnf
     return (a1*pow(f, 2.*p) + 0.5625)**(-0.5) + 2.0*f
-
-
-def convert_concentration(c1, m1def, m2def, omega_m=None):
-    """Given concentration in one mass definition, convert to a new definition"""
-    delta1, density1 = utils.parse_mdef_string(m1def)
-    delta2, density2 = utils.parse_mdef_string(m2def)
-    rho2_over_rho1 = utils.compute_density_ratio(density1, density2, omega_m)
-    print(rho2_over_rho1)
 
 
 

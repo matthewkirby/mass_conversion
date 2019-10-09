@@ -1,5 +1,6 @@
 """Classes to define different concentration-mass relations"""
-import utils
+import mass_conversion.utils as utils
+import mass_conversion.conversions as conv
 
 
 class ConcentrationModel(object):
@@ -36,10 +37,12 @@ class FixedC200c(ConcentrationModel):
         line1 = '\nc200c = {}\n'.format(self.c200c)
         return parent+line1
 
-    def __call__(self, m1list, m1def):
-        """Given m1 in m1def, compute concentration in m1def"""
+    def __call__(self, m2, z, m2def, cosmo=None):
+        """Given m2 in m2def, compute concentration in m2def"""
         delta1, density1, c1 = 200., 'crit', self.c200c
-        delta2, density2 = utils.parse_mdef_string(m1def)
+        delta2, density2 = utils.parse_mdef_string(m2def)
+        c2 = conv.convert_concentration(c1, z, '200c', m2def, cosmo)
+        return c2
 
         
 
@@ -47,7 +50,14 @@ class FixedC200c(ConcentrationModel):
 
 def main():
     cmrel = FixedC200c(4.0)
-    cmrel([1e14], '200m')
+    m1 = 1e15
+    z = 0.5
+    m1def = '200m'
+    cosmo = {'omega_m': 0.3, 'omega_k': 0.0, 'omega_l': 0.7}
+    print(cmrel(m1, z, m1def, cosmo))
+
+
+
 
 
 if __name__ == "__main__":

@@ -3,10 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name='mass_conversion',
     version='1.0.0',
-    url='https://github.com/mypackage.git',
-    author='Author Name',
-    author_email='author@gmail.com',
-    description='Description of my package',
-    packages=find_packages(),    
-    install_requires=['numpy >= 1.11.1', 'matplotlib >= 1.5.1'],
+    url='https://github.com/matthewkirby/mass_conversion.git',
+    author='Matthew Kirby',
+    author_email='matthew.ryan.kirby@gmail.com',
+    description='Use a concentration mass relation to convert spherical overdensity masses',
+    packages=find_packages(),
+    install_requires=[''],
 )

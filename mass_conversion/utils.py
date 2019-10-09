@@ -20,7 +20,7 @@ def parse_mdef_string(mdef):
     return delta, density
 
 
-def compute_density_ratio(density1, density2, omega_m):
+def compute_density_ratio(density1, density2, z, cosmo):
     r"""To convert between mass definitions with respect to the mean and critical
     density, you need :math:`\Omega_M`. This function computes the ratio and raises
     an exception if :mean:`\Omega_M` was not specified if it was required.
@@ -34,8 +34,11 @@ def compute_density_ratio(density1, density2, omega_m):
         Density definition of the input quantity
     density2 : str ('mean', 'crit')
         Density definition of the output quantity
-    omega_m : float
-        The local matter density of the universe in units of the critical density
+    z: float
+        Redshift of the halo
+    cosmo: dict
+        Contains cosmology parameters, Omega_M, Omega_K, Omega_L to convert between mass
+        definitions with respect to the mean and critical density
 
     Returns
     -------
@@ -48,19 +51,22 @@ def compute_density_ratio(density1, density2, omega_m):
         return 1.0
 
     # However, if we need to change between them, check that we have a value
-    if omega_m is None:
+    if cosmo is None:
         raise ValueError("OmegaM required to convert between rho_c and rho_m mass defs")
 
     # Compute the density ratio
-    if densityratio is 'crit/mean':
-        return 1.0/omega_m
-    elif densityratio is 'mean/crit':
-        return omega_m
+    if densityratio == 'crit/mean':
+        return ez_sq(z, cosmo)/(cosmo['omega_m']*(1.0+z)**3)
+    elif densityratio == 'mean/crit':
+        return cosmo['omega_m']*(1.0+z)**3/ez_sq(z, cosmo)
     else:
-        raise ValueError("densityratio={} not recognized!!".format(densityratio))
+        raise ValueError("densityratio: {} not recognized!!".format(densityratio))
 
 
-
+def ez_sq(z, cosmo):
+    """The LCDM dimensionless Hubble parameter squared"""
+    opz = 1.0 + z
+    return cosmo['omega_m']*opz**3 + cosmo['omega_k']*opz**2 + cosmo['omega_l']
 
 
 
