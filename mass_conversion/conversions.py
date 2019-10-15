@@ -5,13 +5,27 @@ import mass_conversion.cM_models as models
 
 
 
-# def select_cM_relation(cMstring):
-#     """Parse the c-M relation from the ini file into a callable."""
-#     if cMstring.lower() == 'child18':
-#         cMcallable = concentration_child18
-#     else:
-#         raise ValueError("{} is not a supported c-M relation.".format(cMstring))
-#     return cMcallable
+def select_cM_relation(cMstring):
+    """Parse the c-M relation string into a callable
+
+    Currently supported: fixedc200c
+    
+    Parameters
+    ----------
+    cMstring: str
+        The name of the cM relation to use
+        
+    Returns
+    -------
+    cMcallable: callable
+        An instance of a child of `ConcentrationModel`
+    """
+    if cMstring.lower() == 'fixedc200c':
+        cMcallable = models.FixedC200c
+    else:
+        raise ValueError("{} is not a supported c-M relation.".format(cMstring))
+    return cMcallable
+
 
 def convert_concentration(c1, z, m1def, m2def, cosmo=None):
     r"""Convert concentration in a given mass definition to a different mass definition
