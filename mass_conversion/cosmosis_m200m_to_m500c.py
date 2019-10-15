@@ -1,61 +1,56 @@
-from cosmosis.datablock import names, option_section
+from cosmosis.datablock import option_section
+import cM_models as models
+import conversions as conv
 
 
-# We have a collection of commonly used pre-defined block section names.
-# If none of the names here is relevant for your calculation you can use any
-# string you want instead.
-####################################################################################
-# cosmo = names.cosmological_parameters
-supported_cM_models = ['fixedc']
+supported_cM_models = ['fixedc200c']
 
 
 def setup(options):
-    # Load the cM model specified in the config file
-    universal_cM_model = options[option_section, "cM_model"]
-    if universal_cM_model not in supported_cM_models:
-        raise ValueError("{}, is not a supported c-M relation.".format(universal_cM_model))
+    # Load the cM model specified in the config file and ensure that it is supported
+    cM_model_id = options[option_section, "cM_model"]
+    if cM_model_id not in supported_cM_models:
+        raise ValueError("{}, is not a supported c-M relation.".format(cM_model_id))
 
-    if cM_model is 'fixedc':
+    # Initialize the model
+    if cM_model_id is 'fixedc':
+        fixedc = options.get_float(option_section, "c200c")
+        cMmodel = models.FixedC200c(fixedc)
 
-
-    #The call above will crash if "mode" is not found in the ini file.
-    #Sometimes you want a default if nothing is found:
-    high_accuracy = options.get(option_section, "high_accuracy", default=False)
-
-    #Now you have the input options you can do any useful preparation
-    #you want.  Maybe load some data, or do a one-off calculation.
-    loaded_data = my_calculation.prepare_something(mode)
-
-    #Whatever you return here will be saved by the system and the function below
-    #will get it back.  You could return 0 if you won't need anything.
-    return loaded_data
+    return cMmodel
 
 
 def execute(block, config):
-    #This function is called every time you have a new sample of cosmological and other parameters.
-    #It is the main workhorse of the code. The block contains the parameters and results of any 
-    #earlier modules, and the config is what setup returned
+    # Rename the input for clarity
+    cMmodel = config
 
-    # Just a simple rename for clarity.
-    loaded_data = config
+    # Load the cosmology from the chain
+    omega_m = block["cosmological_parameters", "omega_M"]
+    omega_k = block["cosmological_parameters", "omega_k"]
+    omega_l = block["cosmological_parameters", "omega_l"]
+    omega_nu = block["cosmological_parameters", "omega_nu"]
 
-    #This loads a value from the section "cosmological_parameters" that we read above.
-    omega_m = block[cosmo, "omega_m"]
+    # This is only used for rho_c(z) = rho_c*H^2(z) so we keep the neutrino contribution.
+    cosmo = {'omega_m': omega_m, 'omega_k': omega_k, 'omega_l': omega_l}
 
-    # Do the main calculation that is the purpose of this module.
-    # It is good to make this execute function as simple as possible
-    cluster_mass = my_calculation.compute_something(omega_m, loaded_data)
+    # Load the masses used for the mass function and convert to M200m
+    # after subtracting off the neutrino component
+    mass_200m = block["mass_function", "m_h"] * (omega_m - omega_nu)
+    zlist = block["mass_function", "z"]
 
-    # Now we have got a result we save it back to the block like this.
-    block[cosmo, "cluster_mass"] = cluster_mass
+    # For each mass, convert to M500c
+    mass_500c = np.array([conv.convert_m1_to_m2(mass_200m, z, '200m', '500c', cMmodel, cosmo=cosmo)
+                          for z in zlist])
 
-    #We tell CosmoSIS that everything went fine by returning zero
+    # Save it to the data block
+    outname = "where_is_this"
+    block[outname, "m200m"] = mass_200m
+    block[outname, "z"] = zlist
+    block[outname, "m500c"] = mass_500c
+
+    # Return 0 if gucci
     return 0
 
 
-
-
 def cleanup(config):
-    # Usually python modules do not need to do anything here.
-    # We just leave it in out of pedantic completeness.
     pass
