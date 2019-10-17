@@ -45,9 +45,9 @@ def execute(block, config):
 
     # Save it to the data block
     outname = "mass_conversion"
-    block[outname, "m200m"] = mass_200m
+    block[outname, "lnm200m"] = np.log(mass_200m)
     block[outname, "z"] = zlist
-    block[outname, "m500c"] = mass_500c
+    block[outname, "lnm500c"] = np.log(mass_500c)
 
     # Return 0 if gucci
     return 0
